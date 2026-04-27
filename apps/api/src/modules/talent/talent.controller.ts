@@ -14,6 +14,8 @@ import { Roles } from '../../common/decorators/roles.decorator';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { UserRole, TalentFilters, CLOUDINARY_FOLDERS } from '@talent-casting/shared';
 import { multerConfig } from '../../config/multer.config';
+import { MediaAssetDto, PortfolioMediaAssetDto } from './dto/media-asset.dto';
+import { UpdateAvailabilityDto } from './dto/update-availability.dto';
 
 @ApiTags('Talents')
 @Controller('talents')
@@ -85,6 +87,18 @@ export class TalentController {
     return { success: true, data: asset };
   }
 
+  @Put('me/photo')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.TALENT)
+  @ApiBearerAuth()
+  async attachPhoto(
+    @CurrentUser('_id') userId: string,
+    @Body() asset: MediaAssetDto,
+  ) {
+    await this.talentService.updateProfilePhoto(userId, asset);
+    return { success: true, data: asset };
+  }
+
   @Post('me/videos/intro')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.TALENT)
@@ -101,6 +115,18 @@ export class TalentController {
     file: Express.Multer.File,
   ) {
     const asset = await this.mediaService.uploadVideo(file, CLOUDINARY_FOLDERS.INTRO_VIDEOS);
+    await this.talentService.updateVideo(userId, 'introVideo', asset);
+    return { success: true, data: asset };
+  }
+
+  @Put('me/videos/intro')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.TALENT)
+  @ApiBearerAuth()
+  async attachIntroVideo(
+    @CurrentUser('_id') userId: string,
+    @Body() asset: MediaAssetDto,
+  ) {
     await this.talentService.updateVideo(userId, 'introVideo', asset);
     return { success: true, data: asset };
   }
@@ -125,6 +151,18 @@ export class TalentController {
     return { success: true, data: asset };
   }
 
+  @Put('me/videos/scene')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.TALENT)
+  @ApiBearerAuth()
+  async attachSceneVideo(
+    @CurrentUser('_id') userId: string,
+    @Body() asset: MediaAssetDto,
+  ) {
+    await this.talentService.updateVideo(userId, 'sceneVideo', asset);
+    return { success: true, data: asset };
+  }
+
   @Post('me/videos/portfolio')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.TALENT)
@@ -138,6 +176,18 @@ export class TalentController {
   ) {
     const asset = await this.mediaService.uploadVideo(file, CLOUDINARY_FOLDERS.PORTFOLIO_VIDEOS);
     const profile = await this.talentService.addPortfolioVideo(userId, { ...asset, title });
+    return { success: true, data: profile };
+  }
+
+  @Post('me/videos/portfolio/attach')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.TALENT)
+  @ApiBearerAuth()
+  async attachPortfolioVideo(
+    @CurrentUser('_id') userId: string,
+    @Body() asset: PortfolioMediaAssetDto,
+  ) {
+    const profile = await this.talentService.addPortfolioVideo(userId, asset);
     return { success: true, data: profile };
   }
 
@@ -162,9 +212,9 @@ export class TalentController {
   @ApiBearerAuth()
   async updateAvailability(
     @CurrentUser('_id') userId: string,
-    @Body('availability') availability: string,
+    @Body() dto: UpdateAvailabilityDto,
   ) {
-    await this.talentService.updateAvailability(userId, availability);
+    await this.talentService.updateAvailability(userId, dto.availability);
     return { success: true, message: 'Availability updated' };
   }
 }

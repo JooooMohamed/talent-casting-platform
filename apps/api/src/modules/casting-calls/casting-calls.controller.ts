@@ -9,6 +9,9 @@ import { RolesGuard } from '../../common/guards/roles.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { UserRole } from '@talent-casting/shared';
+import { CreateCastingCallDto, UpdateCastingCallDto } from './dto/casting-call.dto';
+import { ApplyToCastingCallDto } from '../applications/dto/apply-to-casting-call.dto';
+import { UpdateApplicationStatusDto } from '../applications/dto/update-application-status.dto';
 
 @ApiTags('Casting Calls')
 @Controller('casting-calls')
@@ -42,9 +45,22 @@ export class CastingCallsController {
   @Roles(UserRole.CASTING)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Create a casting call' })
-  async create(@CurrentUser('_id') userId: string, @Body() dto: any) {
+  async create(@CurrentUser('_id') userId: string, @Body() dto: CreateCastingCallDto) {
     const call = await this.castingCallsService.create(userId, dto);
     return { success: true, data: call };
+  }
+
+  @Get('my/applications')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.TALENT)
+  @ApiBearerAuth()
+  async myApplications(
+    @CurrentUser('_id') userId: string,
+    @Query('page') page = 1,
+    @Query('limit') limit = 20,
+  ) {
+    const result = await this.applicationsService.getMyApplications(userId, +page, +limit);
+    return { success: true, data: result };
   }
 
   @Get('my/calls')
@@ -67,7 +83,7 @@ export class CastingCallsController {
   async update(
     @CurrentUser('_id') userId: string,
     @Param('id') id: string,
-    @Body() dto: any,
+    @Body() dto: UpdateCastingCallDto,
   ) {
     const call = await this.castingCallsService.update(userId, id, dto);
     return { success: true, data: call };
@@ -99,8 +115,13 @@ export class CastingCallsController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.CASTING)
   @ApiBearerAuth()
-  async getApplications(@Param('id') id: string, @Query('page') page = 1, @Query('limit') limit = 20) {
-    const result = await this.applicationsService.getByCall(id, +page, +limit);
+  async getApplications(
+    @CurrentUser('_id') userId: string,
+    @Param('id') id: string,
+    @Query('page') page = 1,
+    @Query('limit') limit = 20,
+  ) {
+    const result = await this.applicationsService.getByCall(userId, id, +page, +limit);
     return { success: true, data: result };
   }
 
@@ -109,11 +130,12 @@ export class CastingCallsController {
   @Roles(UserRole.CASTING)
   @ApiBearerAuth()
   async updateApplication(
+    @CurrentUser('_id') userId: string,
+    @Param('id') castingCallId: string,
     @Param('appId') appId: string,
-    @Body('status') status: string,
-    @Body('notes') notes?: string,
+    @Body() dto: UpdateApplicationStatusDto,
   ) {
-    const app = await this.applicationsService.updateStatus(appId, status, notes);
+    const app = await this.applicationsService.updateStatus(userId, castingCallId, appId, dto.status, dto.notes);
     return { success: true, data: app };
   }
 
@@ -126,7 +148,7 @@ export class CastingCallsController {
   async apply(
     @CurrentUser('_id') userId: string,
     @Param('id') castingCallId: string,
-    @Body() body: { coverMessage?: string },
+    @Body() body: ApplyToCastingCallDto,
   ) {
     const app = await this.applicationsService.apply(userId, castingCallId, body.coverMessage);
     return { success: true, data: app };

@@ -1,17 +1,33 @@
 'use client';
 
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import { useParams } from 'next/navigation';
 import Image from 'next/image';
 import { api } from '../../../lib/api';
-import { calculateAge, formatDate, getInitials } from '../../../lib/utils';
+import { calculateAge, getInitials } from '../../../lib/utils';
+import { useAuthStore } from '../../../store/auth.store';
+import { useState } from 'react';
 
 export default function TalentProfilePage() {
   const { slug } = useParams<{ slug: string }>();
+  const user = useAuthStore((s) => s.user);
+  const [contactMessage, setContactMessage] = useState('');
+  const [projectTitle, setProjectTitle] = useState('');
 
   const { data, isLoading } = useQuery({
     queryKey: ['talent', slug],
     queryFn: () => api.get(`/talents/${slug}`).then((r) => r.data.data),
+  });
+
+  const contactMutation = useMutation({
+    mutationFn: () => api.post(`/contact-requests/talents/${data._id}`, {
+      projectTitle,
+      message: contactMessage,
+    }),
+    onSuccess: () => {
+      setProjectTitle('');
+      setContactMessage('');
+    },
   });
 
   if (isLoading) {
@@ -73,6 +89,42 @@ export default function TalentProfilePage() {
         <div className="grid md:grid-cols-3 gap-6">
           {/* Details */}
           <div className="md:col-span-1 space-y-4">
+            {user?.role === 'casting' && (
+              <div className="card p-5">
+                <h2 className="font-semibold text-gray-800 mb-3">Contact</h2>
+                <div className="space-y-3">
+                  <input
+                    className="input text-sm"
+                    placeholder="Project title"
+                    value={projectTitle}
+                    onChange={(e) => setProjectTitle(e.target.value)}
+                  />
+                  <textarea
+                    className="input text-sm min-h-28"
+                    placeholder="Tell the talent why you want to connect..."
+                    value={contactMessage}
+                    onChange={(e) => setContactMessage(e.target.value)}
+                  />
+                  {contactMutation.isSuccess && (
+                    <p className="text-xs text-green-700">Contact request sent.</p>
+                  )}
+                  {contactMutation.error && (
+                    <p className="text-xs text-red-600">
+                      {(contactMutation.error as any).response?.data?.error || 'Could not send request.'}
+                    </p>
+                  )}
+                  <button
+                    type="button"
+                    disabled={!contactMessage.trim() || contactMutation.isPending}
+                    onClick={() => contactMutation.mutate()}
+                    className="btn-primary w-full text-sm"
+                  >
+                    {contactMutation.isPending ? 'Sending...' : 'Request Contact'}
+                  </button>
+                </div>
+              </div>
+            )}
+
             <div className="card p-5">
               <h2 className="font-semibold text-gray-800 mb-3">Details</h2>
               <dl className="space-y-2 text-sm">

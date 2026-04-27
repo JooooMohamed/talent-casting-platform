@@ -1,8 +1,9 @@
-import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { CastingCall, CastingCallDocument } from './schemas/casting-call.schema';
-import { CastingCallStatus, PAGINATION } from '@talent-casting/shared';
+import { CastingCallStatus } from '@talent-casting/shared';
+import { CreateCastingCallDto, UpdateCastingCallDto } from './dto/casting-call.dto';
 
 @Injectable()
 export class CastingCallsService {
@@ -10,7 +11,7 @@ export class CastingCallsService {
     @InjectModel(CastingCall.name) private castingCallModel: Model<CastingCallDocument>,
   ) {}
 
-  async create(userId: string, dto: Partial<CastingCall>): Promise<CastingCallDocument> {
+  async create(userId: string, dto: CreateCastingCallDto): Promise<CastingCallDocument> {
     return this.castingCallModel.create({ ...dto, castingUserId: userId });
   }
 
@@ -33,6 +34,7 @@ export class CastingCallsService {
   }
 
   async findById(id: string): Promise<CastingCallDocument> {
+    if (!Types.ObjectId.isValid(id)) throw new BadRequestException('Invalid casting call id');
     const call = await this.castingCallModel.findById(id).populate('castingUserId', 'email');
     if (!call) throw new NotFoundException('Casting call not found');
     return call;
@@ -47,7 +49,8 @@ export class CastingCallsService {
     return { items, total, page, limit, totalPages: Math.ceil(total / limit) };
   }
 
-  async update(userId: string, callId: string, dto: Partial<CastingCall>): Promise<CastingCallDocument> {
+  async update(userId: string, callId: string, dto: UpdateCastingCallDto): Promise<CastingCallDocument> {
+    if (!Types.ObjectId.isValid(callId)) throw new BadRequestException('Invalid casting call id');
     const call = await this.castingCallModel.findById(callId);
     if (!call) throw new NotFoundException('Casting call not found');
     if (call.castingUserId.toString() !== userId) throw new ForbiddenException();
@@ -56,6 +59,7 @@ export class CastingCallsService {
   }
 
   async delete(userId: string, callId: string): Promise<void> {
+    if (!Types.ObjectId.isValid(callId)) throw new BadRequestException('Invalid casting call id');
     const call = await this.castingCallModel.findById(callId);
     if (!call) throw new NotFoundException('Casting call not found');
     if (call.castingUserId.toString() !== userId) throw new ForbiddenException();
@@ -63,6 +67,9 @@ export class CastingCallsService {
   }
 
   async inviteTalent(userId: string, callId: string, talentProfileId: string): Promise<void> {
+    if (!Types.ObjectId.isValid(callId) || !Types.ObjectId.isValid(talentProfileId)) {
+      throw new BadRequestException('Invalid id');
+    }
     const call = await this.castingCallModel.findById(callId);
     if (!call) throw new NotFoundException('Casting call not found');
     if (call.castingUserId.toString() !== userId) throw new ForbiddenException();

@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Put, Delete, Body, Param, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Delete, Body, Param, UseGuards } from '@nestjs/common';
 import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
 import { CastingService } from './casting.service';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
@@ -6,6 +6,7 @@ import { RolesGuard } from '../../common/guards/roles.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { UserRole } from '@talent-casting/shared';
+import { CreateCastingProfileDto } from './dto/create-casting-profile.dto';
 
 @ApiTags('Casting')
 @Controller('casting')
@@ -26,7 +27,7 @@ export class CastingController {
   @ApiOperation({ summary: 'Create or update casting company profile' })
   async upsertProfile(
     @CurrentUser('_id') userId: string,
-    @Body() dto: any,
+    @Body() dto: CreateCastingProfileDto,
   ) {
     const profile = await this.castingService.createOrUpdateProfile(userId, dto);
     return { success: true, data: profile };

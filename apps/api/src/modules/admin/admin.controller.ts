@@ -8,6 +8,12 @@ import { Roles } from '../../common/decorators/roles.decorator';
 import { TalentService } from '../talent/talent.service';
 import { UsersService } from '../users/users.service';
 import { UserRole } from '@talent-casting/shared';
+import {
+  RejectProfileDto,
+  ToggleFeaturedDto,
+  ToggleVerifiedDto,
+  UpdateUserStatusDto,
+} from './dto/admin-actions.dto';
 
 @ApiTags('Admin')
 @Controller('admin')
@@ -49,8 +55,8 @@ export class AdminController {
 
   @Put('users/:id/status')
   @ApiOperation({ summary: 'Update user status (suspend/ban/activate)' })
-  async updateUserStatus(@Param('id') id: string, @Body('status') status: string) {
-    const user = await this.usersService.updateStatus(id, status);
+  async updateUserStatus(@Param('id') id: string, @Body() dto: UpdateUserStatusDto) {
+    const user = await this.usersService.updateStatus(id, dto.status);
     return { success: true, data: user };
   }
 
@@ -70,22 +76,22 @@ export class AdminController {
 
   @Put('talents/:id/reject')
   @ApiOperation({ summary: 'Reject a talent profile with reason' })
-  async rejectProfile(@Param('id') id: string, @Body('reason') reason: string) {
-    const profile = await this.talentService.rejectProfile(id, reason);
+  async rejectProfile(@Param('id') id: string, @Body() dto: RejectProfileDto) {
+    const profile = await this.talentService.rejectProfile(id, dto.reason);
     return { success: true, data: profile };
   }
 
   @Put('talents/:id/feature')
   @ApiOperation({ summary: 'Toggle featured status for a talent' })
-  async toggleFeatured(@Param('id') id: string, @Body('isFeatured') isFeatured: boolean) {
-    const profile = await this.talentService.toggleFeatured(id, isFeatured);
+  async toggleFeatured(@Param('id') id: string, @Body() dto: ToggleFeaturedDto) {
+    const profile = await this.talentService.toggleFeatured(id, dto.isFeatured);
     return { success: true, data: profile };
   }
 
   @Put('talents/:id/verify')
   @ApiOperation({ summary: 'Toggle verified badge for a talent' })
-  async toggleVerified(@Param('id') id: string, @Body('isVerified') isVerified: boolean) {
-    const profile = await this.talentService.toggleVerified(id, isVerified);
+  async toggleVerified(@Param('id') id: string, @Body() dto: ToggleVerifiedDto) {
+    const profile = await this.talentService.toggleVerified(id, dto.isVerified);
     return { success: true, data: profile };
   }
 }

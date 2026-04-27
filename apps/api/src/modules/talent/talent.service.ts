@@ -1,11 +1,11 @@
 import {
-  Injectable, NotFoundException, BadRequestException, ForbiddenException,
+  Injectable, NotFoundException, BadRequestException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model, Types } from 'mongoose';
+import { Model } from 'mongoose';
 import { TalentProfile, TalentProfileDocument } from './schemas/talent-profile.schema';
 import { CreateTalentProfileDto } from './dto/create-talent-profile.dto';
-import { ApprovalStatus, TalentFilters, PAGINATION } from '@talent-casting/shared';
+import { ApprovalStatus, AvailabilityStatus, TalentFilters, PAGINATION } from '@talent-casting/shared';
 
 @Injectable()
 export class TalentService {
@@ -35,7 +35,7 @@ export class TalentService {
     return profile;
   }
 
-  async getPublicProfile(slug: string, viewerId?: string): Promise<TalentProfileDocument> {
+  async getPublicProfile(slug: string, _viewerId?: string): Promise<TalentProfileDocument> {
     const profile = await this.talentModel.findOne({
       slug,
       approvalStatus: ApprovalStatus.APPROVED,
@@ -99,7 +99,7 @@ export class TalentService {
     return { items, total, page, limit, totalPages: Math.ceil(total / limit) };
   }
 
-  async updateAvailability(userId: string, availability: string): Promise<void> {
+  async updateAvailability(userId: string, availability: AvailabilityStatus): Promise<void> {
     await this.talentModel.findOneAndUpdate({ userId }, { availability });
   }
 

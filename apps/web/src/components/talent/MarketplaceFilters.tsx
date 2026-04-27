@@ -35,6 +35,59 @@ export function MarketplaceFilters({ filters, onChange }: FiltersProps) {
         </div>
       </div>
 
+      {/* Location */}
+      <div>
+        <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2">Location</p>
+        <div className="space-y-2">
+          <input
+            className="input text-sm"
+            placeholder="City"
+            value={filters.city || ''}
+            onChange={(e) => onChange({ city: e.target.value })}
+          />
+          <input
+            className="input text-sm"
+            placeholder="Country"
+            value={filters.country || ''}
+            onChange={(e) => onChange({ country: e.target.value })}
+          />
+        </div>
+      </div>
+
+      {/* Age */}
+      <div>
+        <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2">Age</p>
+        <div className="grid grid-cols-2 gap-2">
+          <input
+            className="input text-sm"
+            type="number"
+            min={0}
+            placeholder="Min"
+            value={filters.ageMin || ''}
+            onChange={(e) => onChange({ ageMin: e.target.value })}
+          />
+          <input
+            className="input text-sm"
+            type="number"
+            min={0}
+            placeholder="Max"
+            value={filters.ageMax || ''}
+            onChange={(e) => onChange({ ageMax: e.target.value })}
+          />
+        </div>
+      </div>
+
+      {/* Language */}
+      <div>
+        <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2">Language</p>
+        <input
+          className="input text-sm"
+          placeholder="Arabic, English..."
+          value={filters.language || ''}
+          onChange={(e) => onChange({ language: e.target.value })}
+        />
+      </div>
+
       {/* Gender */}
       <div>
         <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2">Gender</p>
@@ -91,7 +144,17 @@ export function MarketplaceFilters({ filters, onChange }: FiltersProps) {
 
       {/* Clear */}
       <button
-        onClick={() => onChange({ category: '', gender: '', experience: '', availability: '', country: '' })}
+        onClick={() => onChange({
+          category: '',
+          gender: '',
+          experience: '',
+          availability: '',
+          city: '',
+          country: '',
+          language: '',
+          ageMin: '',
+          ageMax: '',
+        })}
         className="text-sm text-brand-600 hover:underline"
       >
         Clear all filters

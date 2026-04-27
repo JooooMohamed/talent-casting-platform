@@ -1,10 +1,49 @@
 import {
   IsString, IsOptional, IsEnum, IsArray, IsNumber, IsDateString,
-  IsBoolean, IsUrl, MaxLength, Min, Max,
+  IsBoolean, IsUrl, MaxLength, Min, Max, ValidateNested, IsObject,
 } from 'class-validator';
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { TalentCategory, ExperienceLevel, AvailabilityStatus, ContactVisibility } from '@talent-casting/shared';
 import { Type } from 'class-transformer';
+
+class LanguageDto {
+  @IsString()
+  language: string;
+
+  @IsEnum(['native', 'fluent', 'conversational', 'basic'])
+  level: 'native' | 'fluent' | 'conversational' | 'basic';
+}
+
+class PreviousWorkDto {
+  @IsString()
+  @MaxLength(120)
+  label: string;
+
+  @IsUrl({ require_protocol: true })
+  url: string;
+}
+
+class SocialLinksDto {
+  @IsOptional()
+  @IsUrl({ require_protocol: true })
+  instagram?: string;
+
+  @IsOptional()
+  @IsUrl({ require_protocol: true })
+  tiktok?: string;
+
+  @IsOptional()
+  @IsUrl({ require_protocol: true })
+  youtube?: string;
+
+  @IsOptional()
+  @IsUrl({ require_protocol: true })
+  imdb?: string;
+
+  @IsOptional()
+  @IsUrl({ require_protocol: true })
+  website?: string;
+}
 
 export class CreateTalentProfileDto {
   @ApiPropertyOptional()
@@ -86,11 +125,14 @@ export class CreateTalentProfileDto {
   @ApiPropertyOptional({ type: [Object] })
   @IsOptional()
   @IsArray()
-  languages?: { language: string; level: string }[];
+  @ValidateNested({ each: true })
+  @Type(() => LanguageDto)
+  languages?: LanguageDto[];
 
   @ApiPropertyOptional({ type: [String] })
   @IsOptional()
   @IsArray()
+  @IsString({ each: true })
   skills?: string[];
 
   @ApiPropertyOptional({ enum: TalentCategory, isArray: true })
@@ -102,17 +144,16 @@ export class CreateTalentProfileDto {
   @ApiPropertyOptional({ type: [Object] })
   @IsOptional()
   @IsArray()
-  previousWorkLinks?: { label: string; url: string }[];
+  @ValidateNested({ each: true })
+  @Type(() => PreviousWorkDto)
+  previousWorkLinks?: PreviousWorkDto[];
 
   @ApiPropertyOptional({ type: Object })
   @IsOptional()
-  socialLinks?: {
-    instagram?: string;
-    tiktok?: string;
-    youtube?: string;
-    imdb?: string;
-    website?: string;
-  };
+  @IsObject()
+  @ValidateNested()
+  @Type(() => SocialLinksDto)
+  socialLinks?: SocialLinksDto;
 
   @ApiPropertyOptional({ enum: AvailabilityStatus })
   @IsOptional()

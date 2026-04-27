@@ -51,3 +51,4 @@ apps/mobile/.metro-health-check*
 # Misc
 *.tsbuildinfo
 .cache/
+.vercel

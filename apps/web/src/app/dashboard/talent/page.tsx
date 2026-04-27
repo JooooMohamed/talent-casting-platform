@@ -1,7 +1,7 @@
 'use client';
 
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useState } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useEffect, useState } from 'react';
 import { api } from '../../../lib/api';
 
 export default function TalentDashboard() {
@@ -15,12 +15,22 @@ export default function TalentDashboard() {
 
   const { data: applications } = useQuery({
     queryKey: ['my-applications'],
-    queryFn: () => api.get('/casting-calls').then((r) => r.data.data),
+    queryFn: () => api.get('/casting-calls/my/applications').then((r) => r.data.data),
     enabled: tab === 'applications',
   });
 
   const [form, setForm] = useState({ fullName: '', bio: '', city: '', country: '' });
   const [submitting, setSubmitting] = useState(false);
+
+  useEffect(() => {
+    if (!profile) return;
+    setForm({
+      fullName: profile.fullName || '',
+      bio: profile.bio || '',
+      city: profile.city || '',
+      country: profile.country || '',
+    });
+  }, [profile]);
 
   const saveProfile = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -76,7 +86,7 @@ export default function TalentDashboard() {
                   <input
                     required
                     className="input"
-                    defaultValue={profile?.fullName}
+                    value={form.fullName}
                     placeholder="Your full name"
                     onChange={(e) => setForm({ ...form, fullName: e.target.value })}
                   />
@@ -85,7 +95,7 @@ export default function TalentDashboard() {
                   <label className="block text-sm font-medium text-gray-700 mb-1">City</label>
                   <input
                     className="input"
-                    defaultValue={profile?.city}
+                    value={form.city}
                     placeholder="Cairo"
                     onChange={(e) => setForm({ ...form, city: e.target.value })}
                   />
@@ -94,7 +104,7 @@ export default function TalentDashboard() {
                   <label className="block text-sm font-medium text-gray-700 mb-1">Country</label>
                   <input
                     className="input"
-                    defaultValue={profile?.country}
+                    value={form.country}
                     placeholder="Egypt"
                     onChange={(e) => setForm({ ...form, country: e.target.value })}
                   />
@@ -105,7 +115,7 @@ export default function TalentDashboard() {
                 <textarea
                   rows={4}
                   className="input"
-                  defaultValue={profile?.bio}
+                  value={form.bio}
                   placeholder="Tell casting directors about yourself..."
                   onChange={(e) => setForm({ ...form, bio: e.target.value })}
                 />
@@ -119,8 +129,22 @@ export default function TalentDashboard() {
 
         {tab === 'applications' && (
           <div className="space-y-4">
-            <h2 className="text-lg font-semibold">Casting Calls</h2>
-            <p className="text-sm text-gray-500">Browse and apply to casting calls from the <a href="/casting-calls" className="text-brand-600 hover:underline">Casting Board</a>.</p>
+            <h2 className="text-lg font-semibold">My Applications</h2>
+            {(!applications?.items || applications.items.length === 0) ? (
+              <p className="text-sm text-gray-500">Browse and apply to casting calls from the <a href="/casting-calls" className="text-brand-600 hover:underline">Casting Board</a>.</p>
+            ) : (
+              applications.items.map((app: any) => (
+                <div key={app._id} className="card p-5">
+                  <div className="flex items-start justify-between gap-4">
+                    <div>
+                      <p className="font-semibold text-gray-800">{app.castingCallId?.title || 'Casting call'}</p>
+                      <p className="text-sm text-gray-500 mt-1 line-clamp-2">{app.castingCallId?.description}</p>
+                    </div>
+                    <span className="badge bg-gray-100 text-gray-700 capitalize">{app.status}</span>
+                  </div>
+                </div>
+              ))
+            )}
           </div>
         )}
 

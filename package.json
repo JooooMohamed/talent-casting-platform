@@ -15,6 +15,7 @@
     "mobile": "turbo run android --filter=mobile"
   },
   "devDependencies": {
+    "react": "19.2.3",
     "turbo": "^2.0.0"
   },
   "engines": {

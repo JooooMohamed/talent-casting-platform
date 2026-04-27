@@ -57,6 +57,23 @@ export class MediaService {
     await cloudinary.uploader.destroy(publicId, { resource_type: resourceType });
   }
 
+  createUploadSignature(folder: string, resourceType: 'image' | 'video') {
+    const timestamp = Math.round(Date.now() / 1000);
+    const signature = cloudinary.utils.api_sign_request(
+      { folder, timestamp },
+      this.config.get<string>('CLOUDINARY_API_SECRET'),
+    );
+
+    return {
+      cloudName: this.config.get<string>('CLOUDINARY_CLOUD_NAME'),
+      apiKey: this.config.get<string>('CLOUDINARY_API_KEY'),
+      folder,
+      resourceType,
+      timestamp,
+      signature,
+    };
+  }
+
   getThumbnailUrl(publicId: string): string {
     return cloudinary.url(publicId, {
       resource_type: 'video',

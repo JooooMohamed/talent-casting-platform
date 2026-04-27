@@ -46,8 +46,8 @@ export class CastingCall {
     experience?: ExperienceLevel;
   };
 
-  @Prop({ type: Object, default: { compensationType: 'tbd' } })
-  compensation: { compensationType: string; details?: string };
+  @Prop({ type: Object, default: { type: 'tbd' } })
+  compensation: { type: 'paid' | 'unpaid' | 'tbd'; details?: string };
 
   @Prop({ type: Date })
   deadline: Date;

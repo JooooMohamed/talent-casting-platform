@@ -1,0 +1,17 @@
+node_modules
+**/node_modules
+.git
+.next
+**/.next
+dist
+**/dist
+!packages/shared/dist
+!packages/shared/dist/**
+coverage
+**/coverage
+
+apps/web
+apps/mobile
+
+*.log
+.DS_Store

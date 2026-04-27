@@ -3,7 +3,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import * as bcrypt from 'bcryptjs';
 import { User, UserDocument } from './schemas/user.schema';
-import { UserRole } from '@talent-casting/shared';
+import { UserRole, UserStatus } from '@talent-casting/shared';
 
 @Injectable()
 export class UsersService {
@@ -45,7 +45,7 @@ export class UsersService {
     return { items, total, page, limit, totalPages: Math.ceil(total / limit) };
   }
 
-  async updateStatus(userId: string, status: string): Promise<UserDocument> {
+  async updateStatus(userId: string, status: UserStatus): Promise<UserDocument> {
     const user = await this.userModel.findByIdAndUpdate(
       userId,
       { status },

@@ -1,7 +1,6 @@
 import {
   Injectable,
   UnauthorizedException,
-  BadRequestException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
@@ -22,7 +21,6 @@ export class AuthService {
   async register(dto: RegisterDto) {
     const user = await this.usersService.create(dto.email, dto.password, dto.role);
     const tokens = await this.generateTokens(user._id.toString(), user.email, user.role);
-    await this.usersService.updateRefreshToken(user._id.toString(), tokens.refreshToken);
     return { user: { _id: user._id, email: user.email, role: user.role }, ...tokens };
   }
 
@@ -37,7 +35,6 @@ export class AuthService {
     if (user.status === 'suspended') throw new UnauthorizedException('Account is suspended');
 
     const tokens = await this.generateTokens(user._id.toString(), user.email, user.role);
-    await this.usersService.updateRefreshToken(user._id.toString(), tokens.refreshToken);
     await this.usersService.updateLastLogin(user._id.toString());
 
     return { user: { _id: user._id, email: user.email, role: user.role }, ...tokens };
@@ -46,12 +43,14 @@ export class AuthService {
   async refreshTokens(userId: string, refreshToken: string) {
     const user = await this.usersService.findById(userId);
     if (!user || !user.refreshToken) throw new UnauthorizedException('Access denied');
+    if (user.status === 'banned' || user.status === 'suspended') {
+      throw new UnauthorizedException('Account is not active');
+    }
 
     const tokenMatch = await bcrypt.compare(refreshToken, user.refreshToken);
     if (!tokenMatch) throw new UnauthorizedException('Access denied');
 
     const tokens = await this.generateTokens(user._id.toString(), user.email, user.role);
-    await this.usersService.updateRefreshToken(user._id.toString(), tokens.refreshToken);
     return tokens;
   }
 

@@ -99,6 +99,14 @@ export enum NotificationType {
   CASTING_INVITATION = 'casting_invitation',
   APPLICATION_STATUS = 'application_status',
   NEW_APPLICATION = 'new_application',
+  CONTACT_REQUEST = 'contact_request',
+  CONTACT_REQUEST_STATUS = 'contact_request_status',
+}
+
+export enum ContactRequestStatus {
+  PENDING = 'pending',
+  ACCEPTED = 'accepted',
+  REJECTED = 'rejected',
 }
 
 // ─── Interfaces ───────────────────────────────────────────────────────────────

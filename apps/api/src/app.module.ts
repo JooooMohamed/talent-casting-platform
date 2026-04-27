@@ -11,6 +11,7 @@ import { ApplicationsModule } from './modules/applications/applications.module';
 import { MediaModule } from './modules/media/media.module';
 import { AdminModule } from './modules/admin/admin.module';
 import { NotificationsModule } from './modules/notifications/notifications.module';
+import { ContactRequestsModule } from './modules/contact-requests/contact-requests.module';
 
 @Module({
   imports: [
@@ -35,6 +36,7 @@ import { NotificationsModule } from './modules/notifications/notifications.modul
     MediaModule,
     AdminModule,
     NotificationsModule,
+    ContactRequestsModule,
   ],
 })
 export class AppModule {}

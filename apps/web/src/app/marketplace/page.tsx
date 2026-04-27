@@ -5,7 +5,6 @@ import { useQuery } from '@tanstack/react-query';
 import { api } from '../../lib/api';
 import { TalentCard } from '../../components/talent/TalentCard';
 import { MarketplaceFilters } from '../../components/talent/MarketplaceFilters';
-import { TalentCategory, AvailabilityStatus } from '@talent-casting/shared';
 
 export default function MarketplacePage() {
   const [filters, setFilters] = useState({
@@ -14,9 +13,13 @@ export default function MarketplacePage() {
     search: '',
     category: '',
     gender: '',
+    city: '',
     country: '',
     experience: '',
     availability: '',
+    language: '',
+    ageMin: '',
+    ageMax: '',
   });
 
   const { data, isLoading } = useQuery({
