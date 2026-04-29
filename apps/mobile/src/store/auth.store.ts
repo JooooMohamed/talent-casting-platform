@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { api } from '../services/api';
+import { queryClient } from '../services/queryClient';
 
 interface AuthUser {
   _id: string;
@@ -18,7 +19,7 @@ interface AuthState {
   hydrate: () => Promise<void>;
 }
 
-export const useAuthStore = create<AuthState>((set) => ({
+export const useAuthStore = create<AuthState>(set => ({
   user: null,
   isAuthenticated: false,
   isLoading: true,
@@ -47,7 +48,11 @@ export const useAuthStore = create<AuthState>((set) => ({
   },
 
   register: async (email, password, role) => {
-    const { data } = await api.post('/auth/register', { email, password, role });
+    const { data } = await api.post('/auth/register', {
+      email,
+      password,
+      role,
+    });
     const { user, accessToken, refreshToken } = data.data;
     await Promise.all([
       AsyncStorage.setItem('accessToken', accessToken),
@@ -59,8 +64,16 @@ export const useAuthStore = create<AuthState>((set) => ({
   },
 
   logout: async () => {
-    try { await api.post('/auth/logout'); } catch {}
-    await AsyncStorage.multiRemove(['accessToken', 'refreshToken', 'userId', 'user']);
+    try {
+      await api.post('/auth/logout');
+    } catch {}
+    await AsyncStorage.multiRemove([
+      'accessToken',
+      'refreshToken',
+      'userId',
+      'user',
+    ]);
+    queryClient.clear();
     set({ user: null, isAuthenticated: false });
   },
 }));
